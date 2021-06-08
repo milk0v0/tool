@@ -43,4 +43,3 @@ new PictureSplicing({
   + `encoderOptions` - 在指定图片格式为 `image/jpeg 或` `image/webp的情况下，可以从 0 到 1 的区间内选择图片的质量`。如果超出取值范围，将会使用默认值 `0.92`。
 + 获取 `Blob` - `canvas.toBlob(callback, type, encoderOptions)`
   + `callback` - 回调函数，可获得一个单独的 `Blob` 对象参数。
-
