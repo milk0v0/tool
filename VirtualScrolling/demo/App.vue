@@ -1,6 +1,6 @@
 <template>
 	<div id="app">
-		<VirtualScrolling :dataSource="dataSource" :getHeight="21">
+		<VirtualScrolling v-model="num" :dataSource="dataSource" :getHeight="21">
 			<template v-slot="{ data }">
 				{{ data }}
 			</template>
@@ -17,6 +17,7 @@
 		},
 		data() {
 			return {
+        num: 0,
 				dataSource: city_data,
 			};
 		},
