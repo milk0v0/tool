@@ -11,9 +11,9 @@
     />
     <div
       :style="[{
-        '-webkit-transform': `translate3d(${mode === 'vertical' ? 0 : transform}px, ${mode === 'vertical' ? transform : 0}px, 0)`,
-        'transform': `translate3d(${mode === 'vertical' ? 0 : transform}px, ${mode === 'vertical' ? transform : 0}px, 0)`,
-      }, mode === 'horizontal' && { 'white-space': 'nowrap' }]"
+          '-webkit-transform': `translate3d(${mode === 'vertical' ? 0 : transform}px, ${mode === 'vertical' ? transform : 0}px, 0)`,
+          'transform': `translate3d(${mode === 'vertical' ? 0 : transform}px, ${mode === 'vertical' ? transform : 0}px, 0)`,
+        }, mode === 'horizontal' && { 'white-space': 'nowrap' }]"
     >
       <div
         v-for="(item, index) in runList"
@@ -41,9 +41,9 @@ export default {
     // 模式 横|竖
     mode: {
       validator(val) {
-        return ["vertical", "horizontal"].includes(val);
+        return ['vertical', 'horizontal'].includes(val);
       },
-      default: "vertical",
+      default: 'vertical',
     },
     // 缓冲的屏幕数量
     cacheScreens: {
@@ -52,8 +52,12 @@ export default {
     },
     // 每条 宽度|高度
     getLength: {
-      type: Number | Function,
+      type: [Number, Function],
       default: 32,
+    },
+    /** 容器 宽|高 */
+    wrapperLength: {
+      type: Number,
     },
   },
 
@@ -75,14 +79,14 @@ export default {
       handler() {
         this.$nextTick(() => {
           this.init();
-          this.getRunData();
+          this.getRunData(this.value, true);
         });
       },
       immediate: true,
     },
 
     value(newVal) {
-      this.$refs.wrapper[this.mode === "vertical" ? 'scrollTop' : 'scrollLeft'] = newVal;
+      this.$refs.wrapper[this.mode === 'vertical' ? 'scrollTop' : 'scrollLeft'] = newVal;
       this.getRunData(newVal);
     },
   },
@@ -91,16 +95,10 @@ export default {
     init() {
       this.totalLength = 0;
       this.transform = 0;
-      this.minLength =
-        typeof this.getLength === "number"
-          ? this.getLength
-          : this.getLength({ ...this.dataSource[0] });
+      this.minLength = typeof this.getLength === 'number' ? this.getLength : this.getLength({ ...this.dataSource[0] });
 
       this.dataList = this.dataSource.map((data, index) => {
-        const length =
-          typeof this.getLength === "number"
-            ? this.getLength
-            : this.getLength({ ...data });
+        const length = typeof this.getLength === 'number' ? this.getLength : this.getLength({ ...data });
 
         this.minLength < length && (this.minLength = length);
 
@@ -117,11 +115,9 @@ export default {
       });
 
       // 一屏的最大数量
-      const containerLength = parseInt(
-        getComputedStyle(this.$refs.wrapper)[
-          this.mode === "vertical" ? "height" : "width"
-        ]
-      );
+      const containerLength =
+        this.wrapperLength ||
+        parseInt(getComputedStyle(this.$refs.wrapper)[this.mode === 'vertical' ? 'height' : 'width']);
       this.maxNum = Math.ceil(containerLength / this.minLength);
     },
 
@@ -146,9 +142,9 @@ export default {
       return start;
     },
 
-    getRunData(distance = 0) {
+    getRunData(distance = 0, isInit) {
       //在哪个范围内不执行滚动
-      if (distance > this.scrollScale[0] && distance < this.scrollScale[1]) {
+      if (!isInit && distance > this.scrollScale[0] && distance < this.scrollScale[1]) {
         return;
       }
 
@@ -164,10 +160,7 @@ export default {
       this.transform = this.dataList[upper_start_index].top;
 
       //中间屏幕的元素
-      const mid_list = this.dataList.slice(
-        start_index,
-        start_index + this.maxNum
-      );
+      const mid_list = this.dataList.slice(start_index, start_index + this.maxNum);
 
       // 上屏
       const upper_list = this.dataList.slice(upper_start_index, start_index);
@@ -175,21 +168,14 @@ export default {
       // 下屏元素
       let down_start_index = start_index + this.maxNum;
 
-      down_start_index =
-        down_start_index > this.dataList.length - 1
-          ? this.dataList.length
-          : down_start_index;
+      down_start_index = down_start_index > this.dataList.length - 1 ? this.dataList.length : down_start_index;
 
       this.scrollScale = [
-        this.dataList[Math.floor(upper_start_index + this.maxNum / 2)].top,
-        this.dataList[Math.ceil(start_index + this.maxNum / 2)]?.top ||
-          this.dataList[this.dataList.length - 1].top,
+        this.dataList[Math.floor(upper_start_index + this.maxNum / 2)]?.top,
+        this.dataList[Math.ceil(start_index + this.maxNum / 2)]?.top || this.dataList[this.dataList.length - 1].top,
       ];
 
-      const down_list = this.dataList.slice(
-        down_start_index,
-        down_start_index + this.maxNum * this.cacheScreens
-      );
+      const down_list = this.dataList.slice(down_start_index, down_start_index + this.maxNum * this.cacheScreens);
 
       this.runList = [...upper_list, ...mid_list, ...down_list];
     },
@@ -204,7 +190,7 @@ export default {
         this.ticking = false;
       });
 
-      this.$emit('input', this.mode === "vertical" ? e.target.scrollTop : e.target.scrollLeft);
+      this.$emit('input', this.mode === 'vertical' ? e.target.scrollTop : e.target.scrollLeft);
 
       this.getRunData(this.value);
     },
