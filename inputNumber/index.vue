@@ -27,7 +27,7 @@ export default {
       ) {
         const before = value.substring(0, index);
         const after = value.substring(index + 1);
-        this.height = `${before}${after}`;
+        this.value = `${before}${after}`;
 
         // 恢复光标位置
         this.$nextTick(() => {
@@ -37,7 +37,7 @@ export default {
     },
 
     handleBlur() {
-      this.height = `${+this.height}`;
+      this.value = `${+this.value}`;
     },
   },
 };
